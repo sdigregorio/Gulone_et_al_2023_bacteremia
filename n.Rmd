@@ -1,0 +1,431 @@
+---
+title: "Analysis performed in [Gulone et al 2023](https://www.liebertpub.com/doi/10.1089/mdr.2023.0219)"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook containing code used to analyse metadata of *S. aureus* bacteremia in an Argentinean University Hospital during an 8-year period (2009-2016). A total of 326 *S. aureus* clinical isolates were recovered in three periods: P1: 2009-2010, P2: 2012-2014, and P3: 2015-2016. The results of each analysis appear beneath the code.
+
+
+```{r}
+#loading libraries
+library(tidyverse)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(ggsci)
+library(scales)
+library(gridExtra)
+```
+
+
+## **MRSA isolates susceptibility profile**
+
+Despite the percentages of patients with SAB infected by MRSA were similar in the three periods (44/92, 47.8%; 44/88, 50%; and 39/97, 40.2 % in each period respectively), we observed a concomitant decrease in multiple drug resistance (MDR) among MRSA isolates
+
+```{r}
+BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(Period)%>%
+  count(Bact_isolated)
+```
+```{r}
+BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(Period)%>%
+  count(MDR)%>%
+  mutate(pct=n/sum(n)*100)
+```
+```{r}
+MDR_pos = c(27,26,10)
+MDR_n = c(44,44,39)
+prop.test(MDR_pos,MDR_n)
+prop.trend.test(MDR_pos,MDR_n)
+```
+
+
+Susceptibility profiles, particularly the resistance rates for erythromycin, clindamycin and fluoroquinolones (ciprofloxacin and/or levofloxacin) significantly decrease through time (p = 0.002262, p = 0.0002629, and p = 0.0005516 for each antimicrobial agent respectively)
+
+
+```{r}
+#Graph ERY resistance phenotype by period
+ery <- BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(ERY_Phenotype)%>%
+  ggplot(aes(Period, fill=ERY_Phenotype)) +
+  geom_bar(position="fill")+
+  theme_minimal()+
+  theme(title = element_text(size=7, face="bold"),
+        axis.text=element_text(size=7),
+        axis.title=element_text(size=7,face="bold"),
+        legend.text = element_text(size = 8),
+        legend.title = element_blank())+
+  scale_y_continuous(labels=scales::percent) +
+  scale_fill_manual(values = c("I"="#f2931f",
+                               "R"="#E64B35FF", 
+                               "S"="#4DBBD5FF"))+
+  labs(y="Relative frequencies",
+       title="Erythromycin")
+
+#Graph CLIN resistance phenotype by period
+clin<-BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(CLIN_Phenotype)%>%
+  ggplot(aes(Period, fill=CLIN_Phenotype)) +
+  geom_bar(position="fill")+
+  theme_minimal()+
+  theme(title = element_text(size=7, face="bold"),
+        axis.text=element_text(size=7),
+        axis.title=element_text(size=7,face="bold"),
+        legend.text = element_text(size = 8),
+        legend.title = element_blank())+
+  scale_y_continuous(labels=scales::percent) +
+  scale_fill_manual(values = c("I"="#f2931f",
+                               "R"="#E64B35FF", 
+                               "S"="#4DBBD5FF"))+
+  labs(y="Relative frequencies",
+       title="Clindamycin")
+
+#Graph GEN resistance phenotype by period
+gen<-BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(GEN_Phenotype)%>%
+  ggplot(aes(Period, fill=GEN_Phenotype)) +
+  geom_bar(position="fill")+
+  theme_minimal()+
+  theme(title = element_text(size=7, face="bold"),
+        axis.text=element_text(size=7),
+        axis.title=element_text(size=7,face="bold"),
+        legend.text = element_text(size = 8),
+        legend.title = element_blank())+
+  scale_y_continuous(labels=scales::percent) +
+  scale_fill_manual(values = c("I"="#f2931f",
+                               "R"="#E64B35FF", 
+                               "S"="#4DBBD5FF"))+
+  labs(y="Relative frequencies",
+       title="Gentamycin")
+
+
+#Graph tet (tet+min) resistance phenotype by period
+tet<-BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(Tetraclyclines_phenotype)%>%
+  ggplot(aes(Period, fill=Tetraclyclines_phenotype)) +
+  geom_bar(position="fill")+
+  theme_minimal()+
+  theme(title = element_text(size=7, face="bold"),
+        axis.text=element_text(size=7),
+        axis.title=element_text(size=7,face="bold"),
+        legend.text = element_text(size = 8),
+        legend.title = element_blank())+
+  scale_y_continuous(labels=scales::percent) +
+  scale_fill_manual(values = c("I"="#f2931f",
+                               "R"="#E64B35FF", 
+                               "S"="#4DBBD5FF"))+
+  labs(y="Relative frequencies",
+       title="Tetracyclines")
+
+
+#Graph RIF resistance phenotype by period
+rif<-BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(RIF_Phenotype)%>%
+  ggplot(aes(Period, fill=RIF_Phenotype)) +
+  geom_bar(position="fill")+
+  theme_minimal()+
+  theme(title = element_text(size=7, face="bold"),
+        axis.text=element_text(size=7),
+        axis.title=element_text(size=7,face="bold"),
+        legend.text = element_text(size = 8),
+        legend.title = element_blank())+
+  scale_y_continuous(labels=scales::percent) +
+  scale_fill_manual(values = c("I"="#f2931f",
+                               "R"="#E64B35FF", 
+                               "S"="#4DBBD5FF"))+
+  labs(y="Relative frequencies",
+       title="Rifampin")
+
+
+#Graph fluoroquinolones (CIP+LEV) resistance phenotype by period
+fq<-BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(Fluorquinolones_phenotype)%>%
+  ggplot(aes(Period, fill=Fluorquinolones_phenotype)) +
+  geom_bar(position="fill")+
+  theme_minimal()+
+  theme(title = element_text(size=7, face="bold"),
+        axis.text=element_text(size=7),
+        axis.title=element_text(size=7,face="bold"),
+        legend.text = element_text(size = 8),
+        legend.title = element_blank())+
+  scale_y_continuous(labels=scales::percent) +
+  scale_fill_manual(values = c("I"="#f2931f",
+                               "R"="#E64B35FF", 
+                               "S"="#4DBBD5FF"))+
+  labs(y="Relative frequencies",
+       title="Fluorquinolones")
+
+
+#Graph tms resistance phenotype by period
+tms<-BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(TMS_Phenotype)%>%
+  ggplot(aes(Period, fill=TMS_Phenotype)) +
+  geom_bar(position="fill")+
+  theme_minimal()+
+  theme(title = element_text(size=7, face="bold"),
+        axis.text=element_text(size=7),
+        axis.title=element_text(size=7,face="bold"),
+        legend.text = element_text(size = 8),
+        legend.title = element_blank())+
+  scale_y_continuous(labels=scales::percent) +
+  scale_fill_manual(values = c("I"="#f2931f",
+                               "R"="#E64B35FF", 
+                               "S"="#4DBBD5FF"))+
+  labs(y="Relative frequencies",
+       title="Trimethoprim-sulfamethoxazole")
+
+#Graph VAN resistance phenotype by period
+van<-BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(VAN_Phenotype)%>%
+  ggplot(aes(Period, fill=VAN_Phenotype)) +
+  geom_bar(position="fill")+
+  theme_minimal()+
+  theme(title = element_text(size=7, face="bold"),
+        axis.text=element_text(size=7),
+        axis.title=element_text(size=7,face="bold"),
+        legend.text = element_text(size = 8),
+        legend.title = element_blank())+
+  scale_y_continuous(labels=scales::percent) +
+  scale_fill_manual(values = c("I"="#f2931f",
+                               "R"="#E64B35FF", 
+                               "S"="#4DBBD5FF"))+
+  labs(y="Relative frequencies",
+       title="Vancomycin")
+
+#Graph LZD resistance phenotype by period
+lzd<-BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(LZD_Phenotype)%>%
+  ggplot(aes(Period, fill=LZD_Phenotype)) +
+  geom_bar(position="fill")+
+  theme_minimal()+
+  theme(title = element_text(size=7, face="bold"),
+        axis.text=element_text(size=7),
+        axis.title=element_text(size=7,face="bold"),
+        legend.text = element_text(size = 8),
+        legend.title = element_blank())+
+  scale_y_continuous(labels=scales::percent) +
+  scale_fill_manual(values = c("I"="#f2931f",
+                               "R"="#E64B35FF", 
+                               "S"="#4DBBD5FF"))+
+  labs(y="Relative frequencies",
+       title="Linezolid")
+
+#join graphs into one
+grid.arrange(ery, clin, fq, gen,  rif, tet, tms, van, lzd, 
+             nrow = 3,
+             ncol = 3)
+```
+
+
+**Erythromycin**
+
+```{r}
+#Count ERY resistance phenotype by period
+BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(Period)%>%
+  count(ERY_Phenotype)%>%
+  mutate(pct=n/sum(n)*100)
+```
+```{r}
+#define ERY R positives and negatives and perform prop test
+ERY_R_pos = c(26,20,10)
+ERY_R_n = c(44,44,39)
+prop.test(ERY_R_pos,ERY_R_n)
+prop.trend.test(ERY_R_pos,ERY_R_n)
+```
+
+
+**Clindamycin**
+
+```{r}
+BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(Period)%>%
+  count(CLIN_Phenotype)%>%
+  mutate(pct=n/sum(n)*100)
+```
+```{r}
+CLIN_R_pos = c(20,17,3)
+CLIN_R_n = c(44,44,39)
+prop.test(CLIN_R_pos,CLIN_R_n)
+prop.trend.test(CLIN_R_pos,CLIN_R_n)
+```
+
+
+**Fluoroquinolones**
+
+```{r}
+BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+   group_by(Period)%>%
+   count(Fluorquinolones_phenotype)
+```
+
+```{r}
+FQ_R_pos = c(26,25,8)
+FQ_R_n = c(44,44,39)
+prop.test(FQ_R_pos,FQ_R_n)
+prop.trend.test(FQ_R_pos,FQ_R_n)
+```
+
+
+
+## **Molecular characterization**
+
+When performing molecular characterization of the MRSA isolates we found a remarkable raise in isolates carrying SCCmec type IV between the three periods: increasing from 38.6% (17/44) in P1 to 59.1% (26/44) in P2 and finally reaching 87.2% (34/39) in P3 (Figure 2, p = 6.615e-06).
+
+```{r}
+SCCmec_period<-BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(SCCmec)%>%
+  ggplot(aes(Period, fill=SCCmec)) +
+  geom_bar(position="fill")+
+  theme_minimal()+
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14))+
+  scale_fill_jama()+
+  scale_y_continuous(labels=scales::percent) +
+  labs(y="Relative frequencies")
+
+SCCmec_period
+```
+
+
+```{r}
+BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(Period)%>%
+  count(SCCmec)%>%
+  mutate(pct=n/sum(n)*100)
+```
+
+
+```{r}
+SCCmecIV_pos = c(17,26,34)
+SCCmecIV_n = c(44,44,39)
+prop.test(SCCmecIV_pos,SCCmecIV_n)
+prop.trend.test(SCCmecIV_pos,SCCmecIV_n)
+```
+
+SCCmec type IV isolates were mainly susceptible to antibiotics other than beta-lactams as previously described in our country and therefore exhibited low MDR rates 
+
+
+```{r}
+SCCmec_A<-BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(MDR)%>%
+  ggplot(aes(SCCmec, fill=MDR)) +
+  geom_bar(position="fill")+
+  theme_minimal()+
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14))+
+  scale_fill_lancet()+
+  scale_y_continuous(labels=scales::percent) +
+  labs(y="Relative frequencies")
+SCCmec_A
+```
+
+
+We observed a negative trend (13/17, 13/26, and 16/34 MRSA-IV isolates in P1, P2, and P3, respectively, p = 0.06684) in the carriage of PVL encoding genes (lukS/F-PV) among SCCmecIV isolates, despite the presence of PVL genes in 20-30% of MRSA isolates recovered in the three periods.
+
+```{r}
+BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  filter(SCCmec=="IV")%>%
+  group_by(Period)%>%
+  count(PVL)%>%
+  mutate(pct=n/sum(n)*100)
+```
+
+```{r}
+pvl_pos = c(13,13,16)
+pvl_n = c(17,26,34)
+prop.test(pvl_pos,pvl_n)
+prop.trend.test(pvl_pos,pvl_n)
+```
+
+Most isolates harboring SCCmec I between 2009-2016 belong to ST5-MRSA-I (related to HA-MRSA Cordobés clone). However, the increase of isolates harboring SCCmec IV was not due to a single clone but rather it was associated to different CA-MRSA lineages. During P2 other lineages harbouring SCCmec IV such as ST8-MRSA-IV and ST97-MRSA-IV appeared, and their rates also increased during P3. Remarkably, the elevated proportion of SCCmec IV during P3 (34/39 MRSA isolates), was due mainly by three major genotypes: ST30-MRSA-IV, ST8-MRSA-IV and ST5-MRSA-IV (23.1% and 20.5% and 20.5%, respectively)
+
+```{r}
+Genotype_period<-BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(Genotype)%>%
+  ggplot(aes(Period, fill=Genotype)) +
+  geom_bar(position="fill")+
+  theme_minimal()+
+  theme(axis.text = element_text(size = 12),
+        axis.title = element_text(size = 14))+
+  scale_fill_simpsons()+
+  scale_y_continuous(labels=scales::percent) +
+  labs(y="Relative frequencies",
+       title="B")
+
+Genotype_period
+```
+
+We also found more diversity of spa types in P3 when compared to P2 (9 and 18 different spa types were identified, respectively) associated with the increase in SCCmec IV 
+
+
+```{r}
+spageno2<-BACTERIEMIAS_SAMR_2009_2016_MLS.mod%>%
+  group_by(spa_type)%>%
+  filter(Period!="P1")
+spageno2$Genotype <- factor(spageno2$Genotype,
+                              levels = c("ND-MRSA-I",
+                                         "ST100-MRSA-V",
+                                         "ST238-MRSA-III",
+                                         "ST72-MRSA-I",
+                                         "ND-MRSA-NT",
+                                         "ST5-MRSA-I",
+                                         "ND-MRSA-IV",
+                                         "ST100-MRSA-IV",
+                                         "ST72-MRSA-IV",
+                                         "ST97-MRSA-IV",
+                                         "ST5-MRSA-IV",
+                                         "ST8-MRSA-IV",
+                                         "ST30-MRSA-IV"
+                              ))
+
+spageno3<-  ggplot(spageno2, aes(x=Genotype, fill=spa_type)) +
+  geom_bar(position="fill",
+           width = 0.8)+
+  theme_minimal()+
+  theme(axis.text = element_text(size = 8),
+        axis.title = element_text(size = 9))+
+  scale_fill_manual(values = c("ND"="#D3D3D3",
+                               "Not in DB"="#DDA0DD",
+                               "Novel-t008 related"="#A9A9A9FF",
+                               "Novel-t019 related"="#F0E685FF",
+                               "Novel-t11608 related"="#466983FF",
+                               "Novel-t1346 related"="#7FFFD4",
+                               "Novel-t149 related"="#D595A7FF",
+                               "Novel-t2724 related"="#802268FF",
+                               "Novel-t512 related"="#6BD76BFF",
+                               "Novel-t942 related"="#5DB1DDFF",
+                               "t002"="#924822FF",
+                               "t008"="#837B8DFF",
+                               "t019"="#e25322",
+                               "t024"="#FFC0CB",
+                               "t037"="#7A65A5FF",
+                               "t067"="#E4AF69FF",
+                               "t11644"="#3B1B53FF",
+                               "t121"="#CDDEB7FF",
+                               "t148"="#612A79FF",
+                               "t149"="#AE1F63FF",
+                               "t168"="#fe935a",
+                               "t189"="#5A655EFF",
+                               "t2051"="#CC9900FF",
+                               "t215"="#99CC00FF",
+                               "t2168"="#749B58FF",
+                               "t311"="#303386",
+                               "t330"="#FBEF3A",
+                               "t359"="#33CC00FF",
+                               "t5160"="#008000",
+                               "t521"="#00CC99FF",
+                               "t7892"="#0099CCFF",
+                               "t9645"="#0A47FFFF"))+
+  scale_y_continuous(labels=scales::percent) +
+  labs(y="Relative frequencies",
+       fill="spa type")
+                                        
+
+spageno3 +facet_wrap(~Period)+coord_flip()+
+  theme(strip.text.x = element_text(size = 9))
+
+```
+
+
